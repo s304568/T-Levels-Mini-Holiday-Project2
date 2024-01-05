@@ -1,3 +1,4 @@
+from bcrypt import checkpw, gensalt, hashpw
 from random import randrange
 import sqlite3
 from sqlite3 import Error
@@ -11,9 +12,13 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
-with open("G:\ALEX\web_dev\T-level-mini-holiday-project\T-level-mini-holiday-project\src\Python-Folder\OneJson.json","r") as file:
+with open(r"C:\Users\s304568\Documents\repos\T-level-mini-holiday-project\Python-Folder\OneJson.json","r") as file:
     j2 = json.load(file)
     
+@app.route('/signup', methods=['POST'])
+def signup():
+    data = 
+
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -22,20 +27,51 @@ def login():
     password = data.get('password') 
 
     Final_q= check_credentials(username, password)
-    print("Final q: " + Final_q)
-    queryOne(conn,Final_q)
-    message = Response(conn, data)
+    #print("Final q: " + Final_q)
+    data = queryOne(conn,Final_q)
+    if len(data) >= 1:
+        print("THIS IS THE DATA:___",data)
+        random_num = randrange(1, 3)
+        q = "Select HolidayMessage.Message From HolidayMessage Where HolidayMessage.ID =" + str(random_num)
+        cu = conn.cursor()
+        cu.execute(q)
+        conn.commit()
+        message = cu.fetchall()
+        #print("THIS IS THE MESSAGE:___ ", message)
+    else:
+        message = "Invalid Log In Please Try Again !!!"
     
-    return username ,password
+    return jsonify({"message":message})
+    '''
+    if username in logins:
+        savedPassword = logins["username"]
+        providedPassword = request.json["password"].encode("utf-8")
+        if checkpw(providedPassword, savedPassword):
+            return "Valid Log in", 200 ,"\n", message
+        else:
+            return "Invalid Log In please try again" , 200
+    else:
+        salt = gensalt()
+        hashedPassword = hashpw(providedPassword, salt)
+        logins[username]
+        '''
+#(username, password) in data.items()
 
     
-@app.route('/message', methods = ["GET"])
-def get_message():
-    message = request.args.get("message")
-    return jsonify(message)
-
-    if __name__ == "__main__":
-        app.run(debug=True)
+'''def Response(username,password, conn, data):
+    if (username, password) in data.items():
+        print("THIS IS THE DATA:___",data)
+        random_num = randrange(1, 3)
+        q = "Select HolidayMessage.Message From HolidayMessage Where HolidayMessage.ID =" + str(random_num)
+        cu = conn.cursor()
+        cu.execute(q)
+        conn.commit()
+        message = cu.fetchall()
+        #print("THIS IS THE MESSAGE:___ ", message)
+    else:
+        message = "Invalid Log In Please Try Again !!!"
+    return message'''
+    
        
 
 
@@ -78,7 +114,7 @@ def check_credentials(username, password):
         return Final_q
     
 
-conn = sqlite3.connect(r"G:\ALEX\web_dev\T-level-mini-holiday-project\T-level-mini-holiday-project\src\Python-Folder\UserName-PassWord.db",check_same_thread=False)
+conn = sqlite3.connect(r"C:\Users\s304568\Documents\repos\T-level-mini-holiday-project\Python-Folder\UserName-PassWord.db",check_same_thread=False)
 
 
 def queryOne(conn, Final_q):
@@ -88,22 +124,11 @@ def queryOne(conn, Final_q):
     conn.commit()
     data = cu.fetchall()
     
-    
+    print("This is the data:", data)
     return data
 
 
-def Response(conn, data):
-    if data:
-        random_num = randrange(1, 3)
-        q = "From HolidayMessages.Messages Where HolidayMessages.Messages =" + random_num
-        cu = conn.cursor()
-        cu.execute(q)
-        conn.commit()
-        message = cu.fetchall()
-        print(message)
-    else:
-        message = "Not found"
-    return message
+
 
 if __name__ == "__main__":
     app.run()
